@@ -4,7 +4,9 @@
 This GitHub project is associated to
 
 # How to install/run the ACADB brGDGT calibration ?
-
+1. Install R
+2. It is easier to use Rstudio
+3. Download this GitHub repository
 # Use it for your paleo brGDGT data
 1. Import your paleo data:
 - The brGDGT paleo matrix should be in .csv using comma as separator and . as decimal
