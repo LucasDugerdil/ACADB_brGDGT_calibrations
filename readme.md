@@ -11,4 +11,9 @@ This GitHub project is associated to
 1. Import your paleo data:
 	- The brGDGT paleo matrix should be in .csv using comma as separator and . as decimal
 	- The name of the column should be similar to the one of XRD.csv, the paleo exemple
+	- Import your core.csv file into './Import/Paleo/' folder
+	- (Optional) build a metadata matrix including the core name, Latitude, Longitude and surface climate parameters
 
+2. Open the main.R file in Rstudio
+3. Modify the scrip with your own paleo brGDGT data
+	- In the section 
