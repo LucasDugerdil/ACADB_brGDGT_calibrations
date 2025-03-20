@@ -15,7 +15,13 @@ This GitHub project is associated to
 	- (Optional) build a metadata matrix including the core name, Latitude, Longitude and surface climate parameters
 
 2. Open the main.R file in Rstudio
-3. Verify you have the needed packages installed (i.e. `reshape2, ggplot2, patchwork, randomForest, dplyr, palaeoSIG, caret, gbm`)
-3. Modify the scrip with your own paleo brGDGT data
+
+3. Package installation
+	- Verify you have the needed packages installed (i.e. `reshape2, ggplot2, patchwork, randomForest, dplyr, palaeoSIG, caret, gbm`)
+	- If not use the command `install.packages("reshape2")` for instance
+	
+4. Modify the scrip with your own paleo brGDGT data
 	- In the section `#### Import paleo data ####` replace the `GDGT.XRD` path to your own `core.csv` matrix
 	- (Optional) same for the `metadata_core.csv` file
+
+5. Run the script
