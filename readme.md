@@ -4,7 +4,7 @@
 This GitHub project is associated to
 
 # How to install/run the ACADB brGDGT calibration ?
-1. Install R
+1. Install [R](https://larmarange.github.io/analyse-R/installation-de-R-et-RStudio.html)
 2. It is easier to use Rstudio
 3. Download this GitHub repository
 # Use it for your paleo brGDGT data
