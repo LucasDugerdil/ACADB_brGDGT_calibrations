@@ -42,7 +42,7 @@ pBRT.XRD <- Combine.ML.cluster(
   # Param.clim = "MAAT", 
   # Plot.y.lab = "Age (yr cal BP)", 
   # Surf.val = XRD.metadata$MAAT[row.names(XRD.metadata) == "XRD"],
-  # Cluster.prob = "K-cold/wet",
+  # Cluster.prob = "K-cold/wet", #or "Both" or "K-cold/wet" 
   # Facet = F, Only.best = F, Show.proba = T, Highlight.combined = T, 
   Save.plot = "Figures/XRD_combined.pdf", H = 1000, W = 500,
   Save.path = "Results/XRD_brACA_combined.Rds"
