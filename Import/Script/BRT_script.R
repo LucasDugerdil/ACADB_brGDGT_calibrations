@@ -6,6 +6,7 @@ library(randomForest)
 library(dplyr)
 library(palaeoSig)
 library(caret)
+set.seed(123)
 
 #### Functions  ####
 
@@ -426,29 +427,17 @@ GDGT.histo.plot.surf.core <- function(Mcore, Msurf, Mtype, Select.type, Show.Plo
   }
 }
 
-FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Model.BRT,
-                    Save.tab, Save.plot, Save.RDS, H, W, Only.fit, LakeName, Select.clim,
-                    Ecartype.curve, Model.param.show, Displot, Verbose, GDGT = T,
-                    Zone.Clim.span, Zone.Temp, Save.path){
+FT.core <- function(MCore, MAge, Model.WAPLS = NULL, Model.MAT = NULL, Model.RF = NULL, Model.BRT = NULL,
+                    Only.fit = F, LakeName, Select.clim, Fit.val, 
+                    Ecartype.curve, Model.param.show, Displot = F, Verbose = T, GDGT = T, GDGT.model = "BRT",
+                    Zone.Clim.span = NULL, Zone.Temp, Save.path, Save.tab, Save.plot = NULL, Save.RDS = T, H = NULL, W = NULL){
   #### Init param ####
-  if(missing(Verbose)){Verbose = T}
   if(missing(Save.tab)){Save.tab = T}
-  if(missing(Zone.Clim.span)){Zone.Clim.span = NULL}
   if(missing(Zone.Temp)){Zone.Temp = rep("U", length(Zone.Clim.span)/2)}
   if(missing(Select.clim)){Select.clim = NULL}
-  if(missing(Model.WAPLS)){Model.WAPLS = NULL}
-  if(missing(Model.MAT)){Model.MAT = NULL}
-  if(missing(Model.RF)){Model.RF = NULL}
-  if(missing(Model.BRT)){Model.BRT = NULL}
   if(missing(Save.path)){Save.tab = F; Save.path = NULL}
-  if(missing(Displot)){Displot = F}
   if(missing(Zone.Clim.span)){Zone.OK = F}
   if(missing(Model.param.show)){Model.param.show = F}
-  if(missing(Save.plot)){Save.plot = NULL}
-  if(missing(Save.RDS)){Save.RDS = T}
-  if(missing(W)){W = NULL}
-  if(missing(H)){H = NULL}
-  if(missing(Only.fit)){Only.fit = F}
   if(missing(LakeName)){LakeName = "Lake"}
   if(missing(Fit.val)){Fit.val = 0}
   if(missing(Ecartype.curve)){Ecartype.curve = c(F,F,F,F)}
@@ -459,6 +448,9 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
   Keep.MAT <- deparse(substitute(Model.MAT))
   Keep.RF <- deparse(substitute(Model.RF))
   Keep.BRT <- deparse(substitute(Model.BRT))
+  
+  if(is.null(Model.BRT) == F){if(any(names(Model.BRT) %in% "Settings") == T){Model.BRT <- Model.BRT[!names(Model.BRT) %in% "Settings"]}}
+  if(is.null(Model.RF) == F){if(any(names(Model.RF) %in% "Settings") == T){Model.RF <- Model.RF[!names(Model.RF) %in% "Settings"]}}
   
   if(is.null(Model.WAPLS)== F){Model.type <- Model.WAPLS}
   if(is.null(Model.MAT)== F){Model.type <- Model.MAT}
@@ -481,6 +473,7 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
     
     if(is.null(Model.BRT) == F){
       Model.BRT <- Model.BRT[names(Model.BRT) %in% Select.clim]
+      print(Model.BRT)
       Model.BRT$Best.Param <- Model.BRT$Best.Param[row.names(Model.BRT$Best.Param) %in% Select.clim,]
     }
     
@@ -502,11 +495,10 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
   
   #### Graphical settings ####
   Zone.Temp <- rep(Zone.Temp, each=2)
-  
   if(is.null(Zone.Clim.span) == T | length(Zone.Clim.span) != length(Zone.Temp)){
-    Zone.OK = F; print("Something is wrong with the climate zones. Please check.")}
+    if(Displot == T){print("Something is wrong with the climate zones. Please check.")}
+    Zone.OK = F}
   else{Zone.OK = T}
-  
   Tailleplot <-length(Model.type)-1
   if (Tailleplot <= 3){par(mfrow = c(1,Tailleplot))}
   if (Tailleplot == 4){par(mfrow = c(2,2))}
@@ -542,7 +534,13 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
       NComp.WAPLS = Model.WAPLS$Best.Param[[3]][i]
       if(NComp.WAPLS < 2){NComp.WAPLS <- 2}
       if(Verbose == T){print(paste(round(i/(length(Model.WAPLS)), digits = 2)*100, "% done. The ", LabParamlim, " is modelling with the WAPLS and ", NComp.WAPLS, " parameters.", sep = ""))}
-      Cor.WAPLS = predict(Model.WAPLS[[i]], MCore, npls = NComp.WAPLS, sse = T, nboot = 1000, verbose = F)
+      
+      if(mean(rowSums(Model.WAPLS[[i]]$y), na.rm = T) > 1.5){
+        MCore.WAPLS <- sqrt(MCore)
+        print("Sqrt() transformation of the past data.")}
+      else{MCore.WAPLS <- MCore}
+      
+      Cor.WAPLS = predict(Model.WAPLS[[i]], MCore.WAPLS, npls = NComp.WAPLS, sse = T, nboot = 1000, verbose = F)
       Mmodel[i+1] <- cbind(Cor.WAPLS$fit[,NComp.WAPLS])
       colnames(Mmodel)[i+1] <- LabParamlim
       M.errors.WAPLS[i+1] <- cbind(Cor.WAPLS$SEP.boot[,NComp.WAPLS])
@@ -554,8 +552,14 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
     if(is.null(Model.MAT) == F){
       NComp.MAT = Model.MAT$Best.Param[[3]][i]
       if(NComp.MAT < 4){NComp.MAT <- 4}
-      if(Verbose == T){print(paste("The ", LabParamlim, " is modelling with the MAT and ", NComp.MAT, " analogues.", sep = ""))}
-      Cor.MAT=predict(Model.MAT[[i]], MCore, k = NComp.MAT, sse = T, nboot = 1000, verbose = F)
+      if(Verbose == T){print(paste("The ", LabParamlim, " is predicted with the MAT and ", NComp.MAT, " analogues.", sep = ""))}
+      
+      if(mean(rowSums(Model.WAPLS[[i]]$y), na.rm = T) > 1.5){
+        MCore.MAP <- sqrt(MCore)
+        print("Sqrt() transformation of the past data.")}
+      else{MCore.MAP <- MCore}
+      
+      Cor.MAT = predict(Model.MAT[[i]], MCore.MAP, k = NComp.MAT, sse = T, nboot = 1000, verbose = F)
       MModel.MAT[i+1] <- cbind(Cor.MAT$fit[,2])     # 2 = value-wm (weighted mean), 1 = normal-value
       M.errors.MAT[i+1] <- cbind(Cor.MAT$SEP.boot[,2]) # 2 = value-wm (weighted mean)
       colnames(MModel.MAT)[i+1] <- LabParamlim
@@ -563,12 +567,13 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
       Full.MAT.RDS[[i]] <- Cor.MAT
       names(Full.MAT.RDS)[[i]] <- LabParamlim}
     
-    #### Random forest ####
+    #### Random forest (RF) ####
     if(is.null(Model.RF) == F){
-      if(Verbose == T){print(paste("The ", LabParamlim, " is modelling with the RF.", sep = ""))}
-      Cor.RF = predict(Model.RF[[i]], MCore, see = T)
+      if(Verbose == T){print(paste("The ", LabParamlim, " is predicted with the RF.", sep = ""))}
+      Cor.RF = predict(Model.RF[[i]], MCore, verbose = F)
       MSE <- Model.RF[[i]]$mse             # Pb dans le mse. Manquant pou Mongolie ?
       RMSE.RF <- sqrt(MSE[length(MSE)])
+      # RMSE.RF <- Model.RF[[i]]$Best.Param[row.names(Model.RF[[i]]$Best.Param)==LabParamlim,2]  # Marche pr Mong ms pas Arm
       MModel.RF <- cbind(MModel.RF, Cor.RF)
       colnames(MModel.RF)[i+1] <- LabParamlim
       Full.RF.RDS[[i]] <- Cor.RF
@@ -576,9 +581,11 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
     
     #### Boosted Regression Tree (BRT) ####
     if(is.null(Model.BRT) == F){
-      if(Verbose == T){print(paste("The ", LabParamlim, " is modelling with the BRT.", sep = ""))}
+      if(Verbose == T){print(paste("The ", LabParamlim, " is predicted with the BRT.", sep = ""))}
       MCore.i <- MCore[, names(MCore) %in% colnames(Model.BRT[[i]]$data$x.order)] # ATTENTION il manque les taxon < 0.1 pour les BRT
-      Cor.BRT <- gbm::predict.gbm(Model.BRT[[i]], MCore.i, n.trees = Model.BRT[[i]]$gbm.call$best.trees, type="response")
+      Cor.BRT <- gbm::predict.gbm(Model.BRT[[i]], MCore.i, n.trees = Model.BRT[[i]]$gbm.call$best.trees, type="response", sse = T, verbose = F)
+      # print(Model.BRT[[i]]$cv.fold)
+      # print(Cor.BRT)
       RMSE.BRT <- Model.BRT$Best.Param[i,2]
       
       MModel.BRT<- cbind(MModel.BRT, Cor.BRT)
@@ -843,6 +850,7 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
   if(is.null(Model.BRT) == F){
     #### Save BRT ####
     if(Save.tab == T){
+      # print(Keep.BRT)
       Save.Model.BRT <- gsub("\\.", "_", Keep.BRT)
       add.to.path <- paste("_", Save.Model.BRT, ".csv", sep = "")
       Save.path2 <- gsub("\\.csv", add.to.path, Save.path)
@@ -864,6 +872,8 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
       if(is.null(Model.WAPLS) == F){Save.DB.name <- gsub(".*\\.","", Keep.WAPLS)}
       if(is.null(Model.MAT) == F){Save.DB.name <- gsub(".*\\.","", Keep.MAT)}
       if(is.null(Model.RF) == F){Save.DB.name <- gsub(".*\\.","", Keep.RF)}
+      
+      if(is.null(GDGT.model) == F){Save.DB.name <- paste(GDGT.model, Save.DB.name, sep = "_")} 
     }
     
     Save.path.RDS <- paste(gsub("\\.csv", paste("_", Save.DB.name, sep = ""), Save.path), ".Rds", sep = "")
@@ -876,21 +886,21 @@ FT.core <- function(MCore, MAge, Model.WAPLS, Model.MAT, Fit.val, Model.RF, Mode
   
   #### End ####
   if(is.null(Save.plot) == F){dev.off()}
-  #return(Mmodel)
-  return(Total.model)
+  if(GDGT == F){return(Total.model)}
+  else{return(Mmodel)}
 }
 
 Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.paleo, Plot.y = "Age", Param.clim = "MAAT", 
-                               Highlight.combined = F, Save.path = NULL,
-                               Compare.curve = NULL, Cluster.prob = "Both", Time.lim = NULL, Surf.val = NULL, 
+                               Highlight.combined = F, Save.path = NULL, Method = "BRT", return.plot = F, Panel.annot = NULL, Time.res = NULL,
+                               Compare.curve = NULL, Cluster.prob = "Both", Time.lim = NULL, Surf.val = NULL, Dot.size = 1.5, Time.in.k = F,
                                Core.name = NULL, Plot.y.lab = Plot.y, Show.proba = T, Facet = T, Only.best = T, H = 900, W = 500, Save.plot = NULL){
   #### Cluster predictions ####
   Br.GDGT.paleo <- GDGT.paleo[grepl("f.I", names(GDGT.paleo)) & !grepl("_7Me", names(GDGT.paleo))]
   Br.GDGT.paleo <- data.frame(t(Br.GDGT.paleo))
   Br.GDGT.paleo <- apply(Br.GDGT.paleo, 2, MESS::round_percent)
   Br.GDGT.paleo <- data.frame(t(Br.GDGT.paleo/100))
-  RF_class <- predict(Cluster.prediction, Br.GDGT.paleo)
-  RF_class_prob <- predict(Cluster.prediction, Br.GDGT.paleo, type = "prob")
+  RF_class <- stats::predict(Cluster.prediction, Br.GDGT.paleo)
+  RF_class_prob <- stats::predict(Cluster.prediction, Br.GDGT.paleo, type = "prob")
   Br.GDGT.paleo$Pred.cluster <- RF_class
   Br.GDGT.paleo$Plot.y <- GDGT.paleo[[Plot.y]]
   
@@ -912,7 +922,7 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
   Keep <- c(Plot.y, Param.clim, "Model", "Pred.cluster")
   M <- M[Keep]
   names(M)[c(1:2)] <- c("Plot.y", "Param.clim")
-  M <- full_join(M, Mw[c(1,2,9,8)], by = join_by(Plot.y, Param.clim, Model, Pred.cluster))
+  M <- dplyr::full_join(M, Mw[c(1,2,9,8)], by = join_by(Plot.y, Param.clim, Model, Pred.cluster))
   
   if(Only.best == T){
     M <- M[M$Model  %in% c("ACADB", "Combine-Weighted"),]  
@@ -925,15 +935,17 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
   #### Graphical settings ####
   My_colors <- c("Combined" = "grey20", "Combine-Weighted" = "darkred", 
                  "ACADB" = "bisque3", "K-cold/wet" = "royalblue", "K-warm/arid" = "darkorange",
-                 "MAAT_soil_Naaf" = "darkgreen", "MAAT_LSun" = "darkblue",
-                 "MAAT_mr_DJ" = "darkolivegreen3", "MAAT_DJ_5Me" = "darkolivegreen3", "MAAT_NMSDB_mr5" = "aquamarine2")
+                 "MAAT_soil_Naaf" = "darkgreen", "MAAT_LSun" = "#6b00b2ff", "MAF_MSosa" = "#6b00b2ff", "MAF_meth_Raberg" = "darkgreen", "MAF_full_Raberg" = "aquamarine2",
+                 "MAAT_mr_DJ" = "#d1b336ff", "MAAT_DJ_5Me" = "darkolivegreen3", "MAAT_NMSDB_mr5" = "aquamarine2")
   
-  My_labs <- c("Combined" = "Combined", "Combine-Weighted" = "BRT (combined)", 
-               "MAAT_soil_Naaf" = "MBT'5Me (Naafs et al. 2017)", "MAAT_LSun" = "MBT/CBT lake (Sun et al. 2010)",
-               "ACADB" = "BRT (ACADB)", "K-cold/wet" = "BRT (K-cold/wet)", "K-warm/arid" = "BRT (K-warm/arid)",
-               "MAAT_mr_DJ" = "MR (De Jonge)", "MAAT_DJ_5Me" = "MBT'5Me (De Jonge)", "MAAT_NMSDB_mr5" = "MR mong.")
+  My_labs <- c("Combined" = "Combined", "Combine-Weighted" = "BRT(combined)", 
+               "MAAT_soil_Naaf" = "MBT'5Me (Naafs et al., 2017)", "MAAT_LSun" = "MBT/CBT lake (Sun et al., 2011)",
+               "ACADB" = paste(Method, "(ACADB)"), 
+               "K-cold/wet" = paste(Method, "(K-cold/wet)"),
+               "K-warm/arid" = paste(Method, "(K-warm/arid)"),
+               "MAAT_mr_DJ" = "MR (De Jonge et al., 2014)", "MAAT_DJ_5Me" = "MBT'5Me (De Jonge et al., 2014)", "MAAT_NMSDB_mr5" = "MR mong.")
   
-  if(Facet == T){My_facet <- facet_geochem_grid(vars(Model))}
+  if(Facet == T){My_facet <- tidypaleo::facet_geochem_grid(vars(Model))}
   else{My_facet <- NULL; H <- H/2}
   
   if(is.null(Plot.y.lab) == F){
@@ -948,11 +960,15 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
     else{Age.lab.1 <- Plot.y}
   }
   
-  if(Param.clim == "MAAT"){
-    Clim.lab.1 <- "MAAT\nBRT (°C)"
-    Clim.lab.2 <- "MAAT\nclassic (°C)"
+  if(Param.clim %in% c("MAAT", "MAF")){
+    Clim.lab.1 <- paste(Param.clim, " (°C)\n", Method, sep = "")
+    Clim.lab.2 <- paste(Param.clim, " (°C)\ncomparison", sep = "")
   }
-  else{Clim.lab.1 <- Param.clim; Clim.lab.2 <- Param.clim}
+  else{
+    Clim.lab.1 <- paste(Param.clim, "\n", Method, sep = "")
+    Clim.lab.2 <- paste(Param.clim, "\ncomparison", sep = "")
+    # Clim.lab.1 <- Param.clim; Clim.lab.2 <- Param.clim
+  }
   
   if(is.null(Surf.val) == F){
     Surf.line <- geom_hline(yintercept = Surf.val, linetype = "dotdash", linewidth = 0.55, color = "black", alpha = 0.55)
@@ -965,8 +981,7 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
   else{My_title <- NULL}
   
   if(Highlight.combined == T){
-    Double.line <- geom_line(data = Mw, aes(x = Plot.y, y = Combine.weighted, group = Model, color = Model), linewidth = .8)
-  }
+    Double.line <- geom_line(data = Mw, aes(x = Plot.y, y = Combine.weighted, group = Model, color = Model), linewidth = .8)}
   else{Double.line <- NULL}
   
   if(is.null(Time.lim) == F){Xlim <- xlim(Time.lim)}
@@ -976,6 +991,26 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
     X.title <- element_blank()
   }
   else{X.title <- element_text()}
+  
+  if(is.null(Panel.annot) == F){
+    if(length(Panel.annot) == 1){
+      Annot.in.1 <- ggplot2::annotate("text", x = Inf, y = Inf, label = paste("(", Panel.annot, "1)", sep = ""), hjust = 1.1, vjust = 1.5, size = 4.5)
+      Annot.in.2 <- ggplot2::annotate("text", x = Inf, y = Inf, label = paste("(", Panel.annot, "2)", sep = ""), hjust = 1.1, vjust = 1.5, size = 4.5)
+      Annot.in.3 <- ggplot2::annotate("text", x = Inf, y = Inf, label = paste("(", Panel.annot, "3)", sep = ""), hjust = 1.1, vjust = 1.5, size = 4.5)
+      
+      if(Show.proba == T){Annot.in.cp <- Annot.in.1; Annot.in.main <- Annot.in.2; Annot.in.compar <- Annot.in.3}
+      else{Annot.in.main <- Annot.in.1; Annot.in.compar <- Annot.in.2}
+    }
+    else{print("A faire !!!!")}
+  }
+  else{Annot.in.cp <- NULL; Annot.in.main <- NULL; Annot.in.compar <- NULL}
+  
+  if(is.null(Time.res) == F & is.null(Time.lim) == F){
+    if(Time.in.k == T){
+      My_time_breaks <- paste(seq(Time.lim[1]/1000, Time.lim[2]/1000, Time.res/1000), "k", sep = "")}
+    else{My_time_breaks <- seq(Time.lim[1], Time.lim[2], Time.res)}
+    My_scale_time <- scale_x_continuous(breaks = seq(Time.lim[1], Time.lim[2], Time.res), labels = My_time_breaks, limits = Time.lim)}
+  else{My_scale_time <- NULL}
   
   #### Comparative curves ####
   if(is.null(Compare.curve) == F){
@@ -988,20 +1023,26 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
     names(Mc)[c(1:2)] <- c("Plot.y", "Model")
     Mc$Model <- factor(Mc$Model, ordered = T, levels = unique(Mc$Model))
     p.comp <- ggplot(Mc, aes(x = Plot.y, y = value, group = Model))+
-      My_facet+ Surf.line+ Xlim+
-      geom_point(aes(color = Pred.cluster))+
+      My_facet+ Surf.line+ Xlim+ Annot.in.compar + 
+      geom_point(aes(color = Model), show.legend = T, size = Dot.size, shape = 16)+
+      # geom_point(aes(color = Pred.cluster), show.legend = T)+
       geom_line(aes(color = Model))+ xlab(Age.lab.2)+ ylab(Clim.lab.2)+
       Double.line +
+      My_scale_time +
+      # guides(color = guide_legend(override.aes = list(shape = NA)))+
       scale_color_manual(values = My_colors, label = My_labs, name = NULL)
   }
   else{Ticks.1 <- element_line(); Text.1 <- element_text()}
   
   #### Plot (main) ####
   p.main <- ggplot(M, aes(x = Plot.y, y = Param.clim, group = Model))+
-    My_facet+ Surf.line+ Xlim+
-    geom_point(aes(color = Pred.cluster))+
-    geom_line(aes(color = Model))+ xlab(Age.lab.1)+ ylab(Clim.lab.1)+
+    My_facet+ Surf.line+ Xlim+ Annot.in.main +
+    geom_point(aes(color = Pred.cluster), shape = 16, size = Dot.size)+
+    geom_line(aes(color = Model))+ 
     Double.line+
+    My_scale_time +
+    
+    xlab(Age.lab.1)+ ylab(Clim.lab.1)+
     scale_color_manual(values = My_colors, label = My_labs, name = NULL)+
     theme(axis.text.x = Text.1, axis.ticks.x = Ticks.1)
   
@@ -1027,7 +1068,7 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
     
     RF_class_prob2$Prob.to.show <- round(RF_class_prob2$Prob.to.show*100, digits = 0)
     p.prob <- ggplot(RF_class_prob2, aes(x = Plot.y, y = Prob.to.show))+
-      My_area+ My_title+ Xlim+ 
+      My_area+ My_title+ Xlim+ Annot.in.cp +
       My_col_scale+
       scale_y_continuous(limits = c(0,100), breaks = c(0,50,100))+
       xlab(NULL)+ylab("Cluster\nprob.")+
@@ -1047,37 +1088,52 @@ Combine.ML.cluster <- function(Cluster.prediction, List.models, Model.lab, GDGT.
           plot.background = element_blank(),
           plot.margin = unit(c(0,0,0,0), 'pt'),
           legend.position = "bottom")&
-    guides(color = guide_legend(nrow = 2))
+    guides(color = guide_legend(nrow = 3))
   
   #### Generalized combined plot ####
-  if(is.null(Save.path) == F){
-    Mexp <- data.frame(List.models[[1]][Plot.y])
-    for(i in 1:length(All.param)){
-      Clim.i <- All.param[i]
-      Mw <- cbind(List.models[[1]], M2 = List.models[[2]][[Clim.i]], M1 = List.models[[3]][[Clim.i]], RF_class_prob)
-      
-      Mexp[i+1] <- Mw$M1*Mw$K.cold.wet + Mw$M2*Mw$K.warm.arid
-      names(Mexp)[i+1] <- Clim.i
-    }
-    Mexp$Pred.cluster <- ifelse(Mw$K.warm.arid >= 0.5, "K-warm/arid", "K-cold/wet")
-    saveRDS(Mexp, Save.path)
+  Mexp <- data.frame(List.models[[1]][Plot.y])
+  for(i in 1:length(All.param)){
+    Clim.i <- All.param[i]
+    Mw <- cbind(List.models[[1]], M2 = List.models[[2]][[Clim.i]], M1 = List.models[[3]][[Clim.i]], RF_class_prob)
+    
+    Mexp[i+1] <- Mw$M1*Mw$K.cold.wet + Mw$M2*Mw$K.warm.arid
+    names(Mexp)[i+1] <- Clim.i
   }
+  
+  # names(Mexp)[! names(Mexp) %in% Plot.y] <- paste(names(Mexp)[! names(Mexp) %in% Plot.y], "_", Method, "-CB", sep = "")
+  Mexp2 <- Mexp[Plot.y]
+  Mexp2$K.warm.arid <- Mw$K.warm.arid
+  Mexp2$K.cold.wet <- Mw$K.cold.wet
+  Mexp2$Pred.cluster <- ifelse(Mw$K.warm.arid >= 0.5, "K-warm/arid", "K-cold/wet")
+  Mexp <- list(Mexp, Mexp2)
+  
+  if(is.null(Save.path) == F){saveRDS(Mexp, Save.path)}
+  
   #### Export plot ####
   if(is.null(Save.plot) == F){ggsave(filename = Save.plot, p.main, width = W*0.026458333, height = H*0.026458333, units = "cm")}
-  return(p.main)
+  if(return.plot == T){return(p.main)}
+  if(return.plot == F){return(Mexp)}
+  
 }
-Plot.randomTF <- function(MPsurf, MPpaleo, Mclim, Plot.MAT = F, Plot.WAPLS = F, Plot.RF = F, Plot.BRT = T, Bold = T, Database = NULL, Lake = NULL,
+
+Plot.randomTF <- function(MPsurf, MPpaleo, Mclim, Plot.MAT = T, Plot.WAPLS = T, Plot.RF = F, Plot.BRT = F, Bold = T, Database = NULL, Lake = NULL,
+                          BRT.max_trees = 1000, BRT.learning_rate = 0.025, BRT.tree_complexity = 4, BRT.bag_fraction = 0.75, BRT.minobs = 10, Transformation = T,
                           Nb.simul = 99, H = 300, W = 1500, Save.path = NULL, return.plot = F, Save.plot = NULL) {
   #### Settings ####
+  library(palaeoSig)
   DB.result <- NULL
   if(is.null(Lake) == T & is.null(Database) == F){print(paste("randomFT() made for", Database))}
   if(is.null(Lake) == F & is.null(Database) == F){print(paste("randomFT() made for", Database, "on lake", Lake))}
+  set.seed(123)
+  
+  if(Transformation == T){MPsurf1 <- sqrt(MPsurf); MPpaleo1 <- sqrt(MPpaleo)}
+  else{MPsurf1 <- MPsurf; MPpaleo1 <- MPpaleo}
   
   #### MAT settings ####
   if(Plot.MAT == T){
-    rlghr <- randomTF(spp = sqrt(MPsurf), 
+    rlghr <- randomTF(spp = MPsurf1, 
                       env = Mclim,
-                      fos = sqrt(MPpaleo), 
+                      fos = MPpaleo1,
                       n = Nb.simul, fun = MAT, col = 1, k = 10, lean = F)
     
     PP1 <- autoplot(rlghr) + theme_light() + ggtitle(paste("MAT (", Database, ")", sep = ""))
@@ -1093,9 +1149,9 @@ Plot.randomTF <- function(MPsurf, MPpaleo, Mclim, Plot.MAT = F, Plot.WAPLS = F, 
   
   #### WAPLS settings ####
   if(Plot.WAPLS == T){
-    rlghr <- randomTF(spp = sqrt(MPsurf), 
+    rlghr <- randomTF(spp = MPsurf1, 
                       env = Mclim,
-                      fos = sqrt(MPpaleo), 
+                      fos = MPpaleo1, 
                       n = Nb.simul, fun = WAPLS, col = 1, npls = 5, lean = F)
     
     PP2 <- autoplot(rlghr) + theme_light() + ggtitle(paste("WAPLS (", Database, ")", sep = ""))
@@ -1111,10 +1167,10 @@ Plot.randomTF <- function(MPsurf, MPpaleo, Mclim, Plot.MAT = F, Plot.WAPLS = F, 
   
   #### RF settings ####
   if(Plot.RF == T){
-    rlghr <- randomTF(spp = sqrt(MPsurf), 
+    rlghr <- randomTF(spp = MPsurf, 
                       env = Mclim,
-                      fos = sqrt(MPpaleo), 
-                      n = Nb.simul, fun = randomForest, col = 1, ntree = 100, mtry = 2, na.action = na.roughfix)
+                      fos = MPpaleo, 
+                      n = Nb.simul, fun = randomForest, col = 1, ntree = 500, na.action = na.roughfix)
     
     PP3 <- autoplot(rlghr) + theme_light() + ggtitle(paste("RF (", Database, ")", sep = ""))
     P95 <- sort(rlghr$sim.ex)[floor(length(rlghr$sim.ex)*0.95)]
@@ -1130,7 +1186,12 @@ Plot.randomTF <- function(MPsurf, MPpaleo, Mclim, Plot.MAT = F, Plot.WAPLS = F, 
   if(Plot.BRT == T){
     # rlghr <- randomTF(spp = sqrt(MPsurf), env = Mclim, fos = sqrt(MPpaleo), 
     rlghr <- randomTF(spp = MPsurf, env = Mclim, fos = MPpaleo,
-                      n = Nb.simul, fun = train, col = 1, method = "gbm", 
+                      n = Nb.simul, fun = train, col = 1, method = "gbm", bag.fraction = BRT.bag_fraction,
+                      tuneGrid = data.frame(
+                        n.trees = BRT.max_trees,
+                        interaction.depth = BRT.tree_complexity,
+                        shrinkage = BRT.learning_rate,
+                        n.minobsinnode = BRT.minobs),
                       verbose = F)
     
     PP4 <- autoplot(rlghr) + theme_light() + ggtitle(paste("BRT (", Database, ")", sep = ""))
