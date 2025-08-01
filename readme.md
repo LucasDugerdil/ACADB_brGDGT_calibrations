@@ -2,6 +2,8 @@
 
 ## Project description
 This GitHub project is associated to the publication of *Boosted Regression Trees machine-learning method drastically improves the brGDGT-based climate reconstruction in drylands.* in *XXXX* accessible [here](https://www.researchgate.net/profile/Lucas-Dugerdil?ev=hdr_xprf)
+The first release is available and citation from zenodo 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16679065.svg)](https://doi.org/10.5281/zenodo.16679065)
 
 This R script permits to easily apply the BRT calibration trained on the ACADB and the two subsets *K-warm/arid* and *K-cold/wet* for your own paleo brGDGT datas.
 
