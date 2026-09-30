@@ -5,9 +5,11 @@ This GitHub project is associated to the publication of "*Boosted Regression Tre
 
 **Research article DOI**: [10.1029/2025PA005214](https://doi.org/10.1029/2025PA005214).
 
+**Research article DOI**: !\[my badge\](https://badgen.net/badge/hello/world/red?icon=doi)
+
 **Published code release**: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16679065.svg)](https://doi.org/10.5281/zenodo.16679065)
 
-**Data repository**: [![PANGAEA DOI](https://img.shields.io/badge/PANGAEA-DOI-blue)](https://doi.org/10.1594/PANGAEA.983391)
+**Data repository**: [![DOI](https://img.shields.io/badge/PANGAEA-DOI-blue)](https://doi.org/10.1594/PANGAEA.983391)
 
 **Author**: **Lucas Dugerdil**<sup>1,2</sup>
 
