@@ -1,7 +1,7 @@
 # BRT calibrations for Arid Central Asian for paleo brGDGT 
 
 ## Overview
-This GitHub project is associated to the publication of *Boosted Regression Trees machine-learning method drastically improves the brGDGT-based climate reconstruction in drylands.* in *Paleoceanography and Paleoclimatology* and accessible at **DOI:** [10.1029/2025PA005214](https://doi.org/10.1029/2025PA005214)
+This GitHub project is associated to the publication of *Boosted Regression Trees machine-learning method drastically improves the brGDGT-based climate reconstruction in drylands.* in *Paleoceanography and Paleoclimatology* in 2025 (Dugerdil et al., 2025c) and accessible at **DOI:** [10.1029/2025PA005214](https://doi.org/10.1029/2025PA005214)
 
 **Author**: **Lucas Dugerdil**<sup>1,2</sup>
 
