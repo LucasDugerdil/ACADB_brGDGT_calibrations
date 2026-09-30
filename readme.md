@@ -7,7 +7,7 @@ This GitHub project is associated to the publication of "*Boosted Regression Tre
 
 **Affiliations**:
 1. Univ. Lyon, ENS de Lyon, Université Lyon 1, CNRS, UMR 5276 LGL-TPE, F-69364, Lyon, France1
-2. Université de Montpellier, CNRS, IRD, EPHE, UMR 5554 ISEM, Montpellier, France  
+2. Université de Montpellier, CNRS, IRD, EPHE, UMR 5554 ISEM, Montpellier, France
 
 **ORCID**: [0000-0003-0266-564X](https://orcid.org/0000-0003-0266-564X)
 
