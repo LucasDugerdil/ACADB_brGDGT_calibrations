@@ -1,4 +1,4 @@
-# BRT calibrations for Arid Central Asian for paleo brGDGT 
+# BRT calibrations for Arid Central Asian for paleo brGDGT (application)
 
 ## Overview
 This GitHub project is associated to the publication of "*Boosted Regression Trees machine-learning method drastically improves the brGDGT-based climate reconstruction in drylands.*" published in *Paleoceanography and Paleoclimatology* in 2025 (Dugerdil et al., 2025c).
@@ -42,6 +42,7 @@ This GitHub project is associated to the publication of "*Boosted Regression Tre
 
 ## Description
 This R script permits to easily apply the BRT calibration trained on the ACADB and the two subsets *K-warm/arid* and *K-cold/wet* for your own paleo brGDGT datas. The GDGT data from the XRD loess-palaeosol sequence are provided in the repository as a data exemple.
+The full script used in the study is accessible for replicability at the GitHub repository [/ACADB_brGDGT_full][https://github.com/LucasDugerdil/ACADB_brGDGT_full].
 
 ## How to install/run the ACADB brGDGT calibrations?
 1. Install [R](https://larmarange.github.io/analyse-R/installation-de-R-et-RStudio.html)
