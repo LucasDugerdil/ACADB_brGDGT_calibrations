@@ -3,7 +3,7 @@
 ## Overview
 This GitHub project is associated to the publication of "*Boosted Regression Trees machine-learning method drastically improves the brGDGT-based climate reconstruction in drylands.*" published in *Paleoceanography and Paleoclimatology* in 2025 (Dugerdil et al., 2025c).
 
-**Research article DOI**: [![Static Badge](https://img.shields.io/badge/DOI-10.1029%2F2025PA005214-yellow)](https://doi.org/10.1029/2025PA005214).
+**Research article DOI**: [![Static Badge](https://img.shields.io/badge/DOI-10.1029%2F2025PA005214-yellow)](https://doi.org/10.1029/2025PA005214)
 
 **Published code release**: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16679065.svg)](https://doi.org/10.5281/zenodo.16679065)
 
@@ -19,6 +19,30 @@ This GitHub project is associated to the publication of "*Boosted Regression Tre
 **Funding**: ANR, Grant [ANR‐22‐CE27‐0018](https://anr.fr/Project-ANR-22-CE27-0018) (STEPABILITY), Sébastien Joannin
 
 
+<table>
+  <tr>
+    <td width="33.33%" align="left" valign="middle"><strong>Research article</strong></td>
+    <td width="33.33%" align="left" valign="middle"><strong>Published release</strong></td>
+    <td width="33.33%" align="left" valign="middle"><strong>Data repository</strong></td>
+  </tr>
+  <tr>
+    <td width="33.33%" align="left" valign="middle">
+
+[![Static Badge](https://img.shields.io/badge/DOI-10.1029%2F2025PA005214-yellow)](https://doi.org/10.1029/2025PA005214)
+
+</td>
+    <td width="33.33%" align="left" valign="middle">
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16679065.svg)](https://doi.org/10.5281/zenodo.16679065)
+
+</td>
+    <td width="33.33%" align="left" valign="middle">
+
+[![Static Badge](https://img.shields.io/badge/DOI-10.1594%2FPANGAEA.983391-green)](https://doi.org/10.1594/PANGAEA.983391)
+
+</td>
+  </tr>
+</table>
 
 ## Description
 This R script permits to easily apply the BRT calibration trained on the ACADB and the two subsets *K-warm/arid* and *K-cold/wet* for your own paleo brGDGT datas. The GDGT data from the XRD loess-palaeosol sequence are provided in the repository as a data exemple.
