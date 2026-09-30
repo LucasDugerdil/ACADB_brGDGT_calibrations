@@ -3,12 +3,6 @@
 ## Overview
 This GitHub project is associated to the publication of "*Boosted Regression Trees machine-learning method drastically improves the brGDGT-based climate reconstruction in drylands.*" published in *Paleoceanography and Paleoclimatology* in 2025 (Dugerdil et al., 2025c).
 
-**Research article DOI**: [![Static Badge](https://img.shields.io/badge/DOI-10.1029%2F2025PA005214-yellow)](https://doi.org/10.1029/2025PA005214)
-
-**Published code release**: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16679065.svg)](https://doi.org/10.5281/zenodo.16679065)
-
-**Data repository**: [![Static Badge](https://img.shields.io/badge/DOI-10.1594%2FPANGAEA.983391-green)](https://doi.org/10.1594/PANGAEA.983391)
-
 **Author**: **Lucas Dugerdil**<sup>1,2</sup>
 
 **Affiliations**:
@@ -18,8 +12,7 @@ This GitHub project is associated to the publication of "*Boosted Regression Tre
 
 **Funding**: ANR, Grant [ANR‐22‐CE27‐0018](https://anr.fr/Project-ANR-22-CE27-0018) (STEPABILITY), Sébastien Joannin
 
-
-<table>
+<table width="100%">
   <tr>
     <td width="33.33%" align="left" valign="middle"><strong>Research article</strong></td>
     <td width="33.33%" align="left" valign="middle"><strong>Published release</strong></td>
