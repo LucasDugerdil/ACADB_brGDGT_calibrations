@@ -12,6 +12,8 @@ This GitHub project is associated to the publication of "*Boosted Regression Tre
 
 **Funding**: ANR, Grant [ANR‐22‐CE27‐0018](https://anr.fr/Project-ANR-22-CE27-0018) (STEPABILITY), Sébastien Joannin
 
+**Open Access**:
+
 <table width="100%">
   <tr>
     <td width="33.33%" align="left" valign="middle"><strong>Research article</strong></td>
